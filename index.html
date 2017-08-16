@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+    <title>逆序扑克</title>
+    <meta name="theme-color" content="#E78081">
+    <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f1f1f1;
+      font-family: "Helvetica Neue", Helvetica, Tahoma, "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "微软雅黑", "WenQuanYi Micro Hei", Arial, sans-serif;
+      font-size: 16px;
+    }
+    img {
+      width: 7.5rem;
+      border-radius: 6px;
+    }
+    button {
+      -webkit-appearance: none;
+      margin: 0.75rem auto;
+      width: 15rem;
+      height: 2.25rem;
+      line-height: 2.25rem;
+      color: #fff;
+      background-color: #3f51b5;
+      outline: none;
+      border: none;
+    }
+    button:hover {
+      background-color: #5c6bc0;
+    }
+    button:active {
+      background-color:  #3949ab;
+    }
+    p {
+      text-indent: 2em;
+    }
+    #app {
+      display: flex;
+      flex-direction: row;
+      width: 100vw;
+      height: 100vh;
+      font-size: 14px;
+    }
+    #func {
+      width: 15rem;
+      padding: 1rem;
+      border: 4px solid #4caf50;
+    }
+    #sort, #demo {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #4caf50;
+    }
+    .img-container {
+      position: relative;
+      flex: 1;
+      margin: 1.25rem;
+    }
+    .poker-item {
+      position: absolute;
+      top: 0;
+      transition: all .8s;
+    }
+    .poker-list-enter, .poker-list-leave-to {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="func">
+        <p>这是一个小时候我父亲教我玩的扑克游戏。游戏规则很简单，从1到K，你对它进行排序，然后把牌翻到背面，先把最上面一张牌抽到最下面，然后翻出最上面一张，重复执行上述操作，直至牌面全部翻完。要求翻出来的牌的顺序为1到K。</p>
+        <div style="text-align:center;margin-top:20px;">
+          <div style="margin-bottom:20px;">
+            <input type="radio" v-model="mode" value="1">&nbsp;不带大小王&nbsp;
+            <input type="radio" v-model="mode" value="2">&nbsp;带大小王
+          </div>
+          <button @click="normalSort()">排序</button>
+          <button @click="y1=y.slice();flop()">翻牌</button>
+          <button @click="reset()">恢复</button>
+        </div>
+      </div>
+      <div id="sort">
+        <div class="img-container" id="x">
+          <transition-group name="poker-list" tag="div">
+            <img v-for="(i,index) in x" class="poker-item" :src="'res/'+i+'.jpg'" :key="i" :style="{left:(index+1)*20+'px'}">
+          </transition-group>
+        </div>
+        <div class="img-container" id="y1">
+          <transition-group name="poker-list" tag="div">
+            <img v-for="(i,index) in y" class="poker-item" :src="'res/'+i+'.jpg'" :key="i" :style="{left:(index+1)*20+'px'}">
+          </transition-group>
+        </div>
+      </div>
+      <div id="demo">
+        <div class="img-container" id="y2">
+          <transition-group name="poker-list" tag="div">
+            <img v-for="(i,index) in y1" class="poker-item" :src="'res/'+i+'.jpg'" :key="i" :style="{left:(index+1)*20+'px'}">
+          </transition-group>
+        </div>
+        <div class="img-container" id="z">
+          <transition-group name="poker-list" tag="div">
+            <img v-for="(i,index) in z" class="poker-item" :src="'res/'+i+'.jpg'" :key="i" :style="{left:(index+1)*20+'px'}">
+          </transition-group>
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@2.4.1/dist/vue.min.js"></script>
+    <script type="text/javascript">
+    Vue.config.devtools = true
+    new Vue({
+      el: '#app',
+      data: {
+        mode: '1',
+        // 排序后的数组
+        y: [],
+        // 用于输出的原始牌
+        y1: [],
+        // 输出的牌
+        z: []
+      },
+      computed: {
+        // 原始数组
+        x () {
+          var arr = []
+          for (var i = 1; i <= this.max; i++) {
+            arr.push(i)
+          }
+          return arr
+        },
+        max () {
+          return this.mode === '1' ? 13 : 15
+        }
+      },
+      methods: {
+        // 常见排序方法
+        normalSort: function () {
+          var tempY = [], tempZ = [], self = this
+          for (var i = 1; i <= this.max; i++) {
+            tempY.push(i)
+            this.y.push(undefined)
+          }
+          while(tempY.length) {
+            // 第一张牌移到最后
+            tempY.push(tempY.shift())
+            // 输出第一张牌
+            tempZ.push(tempY.shift())
+          }
+          for (var i = 1; i <= tempZ.length; i++) {
+            this.y[tempZ[i - 1] - 1] = i
+          }
+        },
+        // 翻牌
+        flop: function () {
+          var self = this
+          this.y1.push(this.y1.shift())
+          setTimeout(function () {
+            self.z.push(self.y1.shift())
+            setTimeout(function () {
+              self.flop()
+            }, 1000)
+          }, 1000)
+        },
+        // 恢复
+        reset: function () {
+          this.y = []
+          this.y1 = []
+          this.z = []
+        }
+      }
+    })
+    </script>
+  </body>
+</html>
